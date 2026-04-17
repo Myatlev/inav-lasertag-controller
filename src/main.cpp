@@ -168,12 +168,15 @@ void handleIncomingFrame(const lt::Frame &frame)
 
     switch (frame.type) {
     case lt::MSG_PING:
+        sendReady();
         sendDebug(lt::DEBUG_PING_RECEIVED, localPlayerId);
         break;
 
     case lt::MSG_SET_PLAYER_ID:
         if (frame.length >= 1) {
             localPlayerId = static_cast<uint8_t>(frame.payload[0] & 0x07);
+            // Re-announce readiness so FC can recover if initial READY was missed at boot.
+            sendReady();
             sendDebug(lt::DEBUG_PLAYER_ID_SET, localPlayerId);
         } else {
             sendDebug(lt::DEBUG_BAD_FRAME, frame.type);
